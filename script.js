@@ -5,10 +5,88 @@
  */
 (function (global, localStorage) {
 
-	'use strict';
+  'use strict';
 
-	const VERSION = '0.1.0';
-  const DEBUG = true;
+  const VERSION = '0.1.0';
+  let DEBUG = false;
+
+  /**
+   * The Weather API object.
+   */
+  let WeatherAPI = {
+
+    settings: {
+      apikey: "YOUR API KEY"
+    },
+
+    /**
+     * The endpoint discovery object.
+     */
+    endpoints: {
+      // geocoding
+      // https://api.openweathermap.org/geo/1.0/direct?q={city name},{state code},{country code}&limit={limit}&appid={API key}
+      geocoding: {
+        url: "https://api.openweathermap.org/geo/1.0/direct?",
+        params: ["q", "limit"]
+      },
+      // 5 day / 3 hour forecast
+      // https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API key}
+      forecast: {
+        url: "https://api.openweathermap.org/data/2.5/forecast?",
+        params: ["lat", "lon"]
+      }
+    },
+
+    /**
+     * Builds the HTTP query.
+     * 
+     * @param {String} endpoint
+     *   The API endpoint.
+     * @param {Array} allowedParams
+     *   The list of allowed parameters. 
+     * @param {Object} params 
+     *   An object with key values of the parameters to query.
+     * @returns {String}
+     *    A RESTful API query.
+     */
+    buildQuery: function (endpoint, allowedParams, params) {
+      let query = endpoint;
+
+      // add api key
+      query += "appid=" + this.settings.apikey;
+
+      // add params
+      for (const key of allowedParams) {
+        if (params[key]) {
+          query += `&${key}=${params[key]}`;
+        }
+      }
+
+      if (DEBUG) console.log(query);
+
+      return query;
+    },
+
+    /**
+     * Fetches the json response from the given query URI.
+     * 
+     * @param {String} query 
+     *   The RESTful API request URI.
+     * @returns {Promise}
+     *   A promise with the parsed JSON response if success,
+     *   or thrown Error if fails.
+     */
+    fetchJsonResponse: async function (query) {
+      const response = await fetch(query);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return await response.json();
+    }
+
+  };
+
+  let locations = getLocations();
 
   // DOM Elements
   const searchForm = global.document.querySelector("#search-form");
@@ -21,10 +99,8 @@
   ///
   // Search
   ///
-  let locations = getLocations();
-
   searchBtn.addEventListener("click", async function (event) {
-    
+
     event.preventDefault();
 
     const input = searchInput.value;
@@ -52,10 +128,10 @@
   ///
   // History
   ///
-  historyCtn.addEventListener("click", function (event) { 
+  historyCtn.addEventListener("click", function (event) {
 
     if (event.target.matches("button.btn.location")) {
-      
+
       const locationBtn = event.target;
 
       const latitude = Number.parseFloat(locationBtn.getAttribute("data-geo-lat"));
@@ -108,8 +184,8 @@
    * @returns {Element}
    *    The location DOM element.
    */
-  function displayLocation({name, lat: latitude, lon: longitude}) {
-    
+  function displayLocation({ name, lat: latitude, lon: longitude }) {
+
     const locationCtn = global.document.createElement("div");
     locationCtn.className = "list-item";
 
@@ -124,29 +200,9 @@
     historyCtn.prepend(locationCtn);
   }
 
-
   ///
   // Backend logic 
   ///
-
-  const settings = {
-    apikey: "a64dec6ac221a36cfa8a08b65b65e8ea"
-  };
-
-  const endpoints = {
-    // geocoding
-    // https://api.openweathermap.org/geo/1.0/direct?q={city name},{state code},{country code}&limit={limit}&appid={API key}
-    geocoding: {
-      url: "https://api.openweathermap.org/geo/1.0/direct?",
-      params: ["q", "limit"]
-    },
-    // 5 day / 3 hour forecast
-    // https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API key}
-    forecast: {
-      url: "https://api.openweathermap.org/data/2.5/forecast?",
-      params: ["lat", "lon"]
-    }
-  };
 
   /**
    * Resolves the geocoding for a given location (OpenWeather API).
@@ -163,10 +219,10 @@
       q: locationDetails,
       limit: 1
     };
-    const {url: endpoint, params: allowedParams} = endpoints["geocoding"];
-    const query = buildQuery(endpoint, allowedParams, params);
+    const { url: endpoint, params: allowedParams } = WeatherAPI.endpoints["geocoding"];
+    const query = WeatherAPI.buildQuery(endpoint, allowedParams, params);
 
-    return fetchJsonResponse(query)
+    return WeatherAPI.fetchJsonResponse(query)
       .then(jsonResponse => jsonResponse[0])
       .then(geoObj => {
 
@@ -192,10 +248,10 @@
       lat: latitude,
       lon: longitude
     };
-    const {url: endpoint, params: allowedParams} = endpoints["forecast"];
-    const query = buildQuery(endpoint, allowedParams, params);
+    const { url: endpoint, params: allowedParams } = WeatherAPI.endpoints["forecast"];
+    const query = WeatherAPI.buildQuery(endpoint, allowedParams, params);
 
-    return fetchJsonResponse(query)
+    return WeatherAPI.fetchJsonResponse(query)
       .then(jsonResponse => jsonResponse.list)
       .then(forecastObj => {
         if (DEBUG) console.log(forecastObj);
@@ -203,77 +259,64 @@
   }
 
   /**
-   * Fetches the json response from the given query URI.
+   * Initialise the Weather API.
    * 
-   * @param {String} query 
-   *   The RESTful API request URI.
-   * @returns {Promise}
-   *   A promise with the parsed JSON response if success,
-   *   or thrown Error if fails.
+   * @param {String} apikey
+   *   The API key token. 
    */
-  function fetchJsonResponse(query) {
-    return fetch(query)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        return response.json();
-      });
-  }
-
-  /**
-   * Builds a RESTful API query.
-   * 
-   * @param {String} endpoint
-   *   The API endpoint.
-   * @param {Array} allowedParams
-   *   The list of allowed parameters. 
-   * @param {Object} params 
-   *   An object with key values of the parameters to query.
-   * @returns {String}
-   *    A RESTful API query.
-   */
-  function buildQuery(endpoint, allowedParams, params) {
-
-    console.log(endpoint, allowedParams);
-    let query = endpoint;
-
-    // add api key
-    query += "appid=" + settings.apikey;
-
-    // add params
-    for (const key of allowedParams) {
-      if (params[key]) {
-        query += `&${key}=${params[key]}`;
-      }
-    }
-
-    if (DEBUG) console.log(query);
-
-    return query;
+  function init(apikey) {
+    WeatherAPI.settings.apikey = apikey;
   }
 
   ///
   // Main
   ///
-  if (DEBUG) console.log(locations);
+  function run() {
+    try {
 
-  for (const location of locations) {
-    displayLocation(location);
+      if (DEBUG) console.log(locations);
 
-    // getGeolocation(location.name)
-    //   .then(geolocation => {
-
-    //     if (DEBUG) console.log(geolocation);
-
-    //     if (geolocation) {
-    //       getForecast(...geolocation);
-    //     }
-    //   })
-    //   .catch(error => {
-    //     console.error(error);
-    //   });
+      for (const location of getLocations()) {
+        displayLocation(location);
+    
+        // getGeolocation(location.name)
+        //   .then(geolocation => {
+    
+        //     if (DEBUG) console.log(geolocation);
+    
+        //     if (geolocation) {
+        //       getForecast(...geolocation);
+        //     }
+        //   })
+        //   .catch(error => {
+        //     console.error(error);
+        //   });
+      }
+    }
+    catch(error) {
+      console.error(error);
+    }
   }
 
+  ///
+  // Public API
+  ///
+
+  global.WeatherApp = {
+    VERSION,
+    DEBUG,
+    setDebug: function (debug) {  
+      DEBUG = debug === true;
+    },
+    init,
+    run
+  };
+
 })(window, localStorage);
+
+///
+// Main
+///
+WeatherApp.init("a64dec6ac221a36cfa8a08b65b65e8ea");
+WeatherApp.run();
+WeatherApp.setDebug(true);
