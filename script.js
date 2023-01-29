@@ -49,6 +49,24 @@
     getForecast(...geolocation);
   });
 
+  ///
+  // History
+  ///
+  historyCtn.addEventListener("click", function (event) { 
+
+    if (event.target.matches("button.btn.location")) {
+      
+      const locationBtn = event.target;
+
+      const latitude = Number.parseFloat(locationBtn.getAttribute("data-geo-lat"));
+      const longitude = Number.parseFloat(locationBtn.getAttribute("data-geo-lon"));
+
+      if (DEBUG) console.log(locationBtn);
+
+      getForecast(latitude, longitude);
+    }
+  });
+
   /**
    * Updates the weather history.
    * 
