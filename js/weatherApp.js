@@ -273,7 +273,7 @@
   function displayToday(weatherObject) {
     // Add today weather card.
     todaySection.innerHTML = `
-        <div id="weather-today" class="card text-white bg-image shadow-4-strong weather today">
+        <div id="weather-today" class="card text-white bg-image shadow-4-strong border border-dark weather today">
           <div class="card-body">
             <h2 class="card-title">
               <span class="city">${weatherObject.city.name}</span>,&nbsp;
@@ -314,12 +314,17 @@
     headerEl.textContent = "5-Day Forecast:"
     forecastSection.appendChild(headerEl);
 
+    // Add card group container.
+    const cardGroupCtn = document.createElement("div");
+    cardGroupCtn.className = "card-group";
+    forecastSection.appendChild(cardGroupCtn);
+
     // Create weather forecast cards.
     weatherObjectList.forEach((weatherObject, index) => {
       // Create container wrapper.
       const ctn = document.createElement("div");
       ctn.id = `forecast-${index}`;
-      ctn.className = `card text-white bg-image shadow-4-strong weather forecast forecast-${index}`;
+      ctn.className = `card text-white bg-image shadow-4-strong border border-dark weather forecast forecast-${index}`;
       ctn.style = "width: 13rem;";
       ctn.setAttribute("data-weather-date", weatherObject.date);
 
@@ -345,7 +350,7 @@
         `;
 
       // Add weather forecast card.
-      forecastSection.appendChild(ctn);
+      cardGroupCtn.appendChild(ctn);
 
       displayBackgrounds(weatherObject.weather, `forecast-${index}`);
     });
