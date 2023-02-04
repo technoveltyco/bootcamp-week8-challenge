@@ -257,7 +257,7 @@
   function displayLocation({ name, lat: latitude, lon: longitude }) {
     const locbtn = global.document.createElement("button");
     locbtn.textContent = name;
-    locbtn.className = "list-group-item d-grid location";
+    locbtn.className = "d-grid list-group-item list-group-item-action list-group-item-secondary location";
     locbtn.setAttribute("data-geo-lat", latitude);
     locbtn.setAttribute("data-geo-lon", longitude);
 
@@ -325,7 +325,6 @@
       const ctn = document.createElement("div");
       ctn.id = `forecast-${index}`;
       ctn.className = `card text-white bg-image shadow-4-strong border border-dark weather forecast forecast-${index}`;
-      ctn.style = "width: 13rem;";
       ctn.setAttribute("data-weather-date", weatherObject.date);
 
       // Add forecast data.
@@ -369,31 +368,31 @@
     switch (weather.condition) {
       case "Snow":
         document.getElementById(idElement).style.background =
-          "center / cover no-repeat url('https://mdbgo.io/ascensus/mdb-advanced/img/snow.gif')";
+          "center / cover no-repeat url('./assets/img/snow.gif')";
         break;
       case "Clouds":
         document.getElementById(idElement).style.background =
-          "center / cover no-repeat url('https://mdbgo.io/ascensus/mdb-advanced/img/clouds.gif')";
+          "center / cover no-repeat url('./assets/img/clouds.gif')";
         break;
       case "Fog":
         document.getElementById(idElement).style.background =
-          "center / cover no-repeat url('https://mdbgo.io/ascensus/mdb-advanced/img/fog.gif')";
+          "center / cover no-repeat url('./assets/img/fog.gif')";
         break;
       case "Rain":
         document.getElementById(idElement).style.background =
-          "center / cover no-repeat url('https://mdbgo.io/ascensus/mdb-advanced/img/rain.gif')";
+          "center / cover no-repeat url('./assets/img/rain.gif')";
         break;
       case "Clear":
         document.getElementById(idElement).style.background =
-          "center / cover no-repeat url('https://mdbgo.io/ascensus/mdb-advanced/img/clear.gif')";
+          "center / cover no-repeat url('./assets/img/clear.gif')";
         break;
       case "Thunderstorm":
         document.getElementById(idElement).style.background =
-          "center / cover no-repeat url('https://mdbgo.io/ascensus/mdb-advanced/img/thunderstorm.gif')";
+          "center / cover no-repeat url('./assets/img/thunderstorm.gif')";
         break;
       default:
         document.getElementById(idElement).style.background =
-          "center / cover no-repeat url('https://mdbgo.io/ascensus/mdb-advanced/img/clear.gif')";
+          "center / cover no-repeat url('./assets/img/clear.gif')";
         break;
     }
   }
